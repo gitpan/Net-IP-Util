@@ -6,7 +6,7 @@ use Carp qw/croak/;
 
 require Exporter;
 our @ISA       = qw/Exporter/;
-our $VERSION   = '1.01';
+our $VERSION   = '1.02';
 
 our @EXPORT    = qw/isClassAddrA
                     isClassAddrB
@@ -39,54 +39,49 @@ use constant { 'A' => qr'^0',
              };
 
 sub isClassAddrA {
-  my ($addr, $dec) = @_;
+  my ($addr) = @_;
 
-  !$dec && _validateIp(&bin2decIpAddr($addr));
-  $dec && ($addr = &dec2binIpAddr($addr));
-
+  (isBinIpAddr($addr)) && _validateIp(&bin2decIpAddr($addr))
+                       || ($addr = &dec2binIpAddr($addr));
   return 1 if($addr =~ A);
 }
 
 sub isClassAddrB {
-  my ($addr, $dec) = @_;
+  my ($addr) = @_;
 
-  !$dec && _validateIp(&bin2decIpAddr($addr));
-  $dec && ($addr = &dec2binIpAddr($addr));
-
+  (isBinIpAddr($addr)) && _validateIp(&bin2decIpAddr($addr))
+                       || ($addr = &dec2binIpAddr($addr));
   return 1 if($addr =~ B);
 }
 
 sub isClassAddrC {
-  my ($addr, $dec) = @_;
+  my ($addr) = @_;
 
-  !$dec && _validateIp(&bin2decIpAddr($addr));
-  $dec && ($addr = &dec2binIpAddr($addr));
-
+  (isBinIpAddr($addr)) && _validateIp(&bin2decIpAddr($addr))
+                       || ($addr = &dec2binIpAddr($addr));
   return 1 if($addr =~ C);
 }
 
 sub isClassAddrD {
-  my ($addr, $dec) = @_;
+  my ($addr) = @_;
 
-  !$dec && _validateIp(&bin2decIpAddr($addr));
-  $dec && ($addr = &dec2binIpAddr($addr));
-
+  (isBinIpAddr($addr)) && _validateIp(&bin2decIpAddr($addr))
+                       || ($addr = &dec2binIpAddr($addr));
   return 1 if($addr =~ D);
 }
 
 sub isClassAddrE {
-  my ($addr, $dec) = @_;
+  my ($addr) = @_;
 
-  !$dec && _validateIp(&bin2decIpAddr($addr));
-  $dec && ($addr = &dec2binIpAddr($addr));
-
+  (isBinIpAddr($addr)) && _validateIp(&bin2decIpAddr($addr))
+                       || ($addr = &dec2binIpAddr($addr));
   return 1 if($addr =~ E);
 }
 
 sub getAddrMaskDefault {
-  my ($addr, $dec) = @_;
+  my ($addr) = @_;
 
-  $dec && ($addr = &dec2binIpAddr($addr));
+  (! isBinIpAddr($addr)) && ($addr = &dec2binIpAddr($addr));
 
   my ($class) = getAddrClass($addr);
 
@@ -96,11 +91,10 @@ sub getAddrMaskDefault {
 }
 
 sub getAddrClass {
-  my ($addr, $dec) = @_;
+  my ($addr) = @_;
 
-  !$dec && _validateIp($addr);
-
-  $dec && ($addr = &dec2binIpAddr($addr));
+  (isBinIpAddr($addr)) && _validateIp(&bin2decIpAddr($addr))
+                       || ($addr = &dec2binIpAddr($addr));
 
   my $class = (($addr =~ A)?'A'
                 :($addr =~ B)?'B'
@@ -137,6 +131,12 @@ sub bin2decIpAddr {
   return $decAddr;
 }
 
+sub isBinIpAddr {
+  my ($addr) = @_;
+
+  return 1 if ($addr =~ /^(([0|1]){8}\.){3}([0|1]){8}$/);
+}
+
 sub _validateIp {
   my ($addr) = @_;
 
@@ -152,9 +152,9 @@ sub _validateIp {
 }
 
 sub isValidMask {
-  my ($addr, $dec) = @_;
+  my ($addr) = @_;
 
-  $dec && ($addr = &dec2binIpAddr($addr));
+  (!isBinIpAddr($addr)) && ($addr = &dec2binIpAddr($addr));
 
   my ($prefix) = ($addr =~ /(.*1)/);
 
@@ -162,9 +162,9 @@ sub isValidMask {
 }
 
 sub extendMaskByBits {
-  my ($mask,$noBits,$dec) = @_;
+  my ($mask,$noBits) = @_;
 
-  $dec && ($mask = &dec2binIpAddr($mask));
+  (! isBinIpAddr($mask)) && ($mask = &dec2binIpAddr($mask));
 
   return $mask if(!$noBits);
 
@@ -179,10 +179,10 @@ sub extendMaskByBits {
 }
 
 sub calcSubnetsNHosts {
-  my ($addr,$borrow,$dec) = @_;
+  my ($addr,$borrow) = @_;
 
-  !$dec && _validateIp($addr);
-  $dec && ($addr = &dec2binIpAddr($addr));
+  (isBinIpAddr($addr)) && _validateIp($addr)
+                       || ($addr = &dec2binIpAddr($addr));
 
   my $defaultMask = getAddrMaskDefault($addr);
 
@@ -199,15 +199,15 @@ sub calcSubnetsNHosts {
 }
 
 sub getBroadcastAddr {
-  my ($addr, $defaultMask, $subnetMask, $dec) = @_;
+  my ($addr, $defaultMask, $subnetMask) = @_;
 
-  $defaultMask && isValidMask($defaultMask,$dec);
-  !$defaultMask && ($defaultMask = getAddrMaskDefault($addr,$dec));
+  $defaultMask && isValidMask($defaultMask);
+  !$defaultMask && ($defaultMask = getAddrMaskDefault($addr));
 
-  $subnetMask && isValidMask($subnetMask,$dec);
-  $dec && ($addr = &dec2binIpAddr($addr)) 
-       && ($defaultMask = &dec2binIpAddr($defaultMask))
-       && ($subnetMask = &dec2binIpAddr($subnetMask));
+  $subnetMask && isValidMask($subnetMask);
+  (! isBinIpAddr($addr)) && ($addr = &dec2binIpAddr($addr));
+  (! isBinIpAddr($defaultMask)) && ($defaultMask = &dec2binIpAddr($defaultMask));
+  (! isBinIpAddr($subnetMask)) && ($subnetMask = &dec2binIpAddr($subnetMask));
 
   my $subnetMaskOnBits = ($subnetMask =~ s/1/1/g);
   my $defaultMaskOnBits = ($defaultMask =~ s/1/1/g);
@@ -285,28 +285,28 @@ Net::IP::Util - Common useful routines like converting decimal address to binary
                        calcSubnetsNHosts
                        getBroadcastAddr    ## Explicit inclusions
 
-  isClassAddrA('127.0.32.45',1);
+  isClassAddrA('127.0.32.45');
   isClassAddrA('00001111.11110010.00100100.10000001');
 
   dec2binIpAddr('128.0.0.56');
   bin2decIpAddr('10001000.10100001.00010101.00000001');
 
-  getAddrMaskDefault('124.45.0.0',1);
+  getAddrMaskDefault('124.45.0.0');
   getAddrMaskDefault('10000000.00000001.01010101.10000001');
 
-  getAddrClass('124.45.0.0',1);
+  getAddrClass('124.45.0.0');
   getAddrClass('00001111.11110010.00100100.10000001');
 
-  isValidMask('255.255.252.0',1);
+  isValidMask('255.255.252.0');
   isValidMask('11111111.00000000.00000000.00000000');
 
-  extendMaskByBits('255.255.0.0',2,1);
+  extendMaskByBits('255.255.0.0',2);
   extendMaskByBits('11111111.00000000.00000000.00000000',2);
 
-  calcSubnetsNHosts('128.0.0.1',4,1);
+  calcSubnetsNHosts('128.0.0.1',4);
   calcSubnetsNHosts('10001000.10100001.00010101.00000001',4);
                            
-  getBroadcastAddr('198.23.16.0','255.255.255.240','255.255.255.252',1);
+  getBroadcastAddr('198.23.16.0','255.255.255.240','255.255.255.252');
   getBroadcastAddr('10000000.00000001.01010101.10000001',
                    '11111111.11111111.11111111.11110000',
                    '11111111.11111111.11111111.11111100',);
@@ -325,9 +325,9 @@ Net::IP::Util - Common useful routines like converting decimal address to binary
 
 =head2 isClassAddrA,isClassAddrB,isClassAddrC,isClassAddrD,isClassAddrE
 
-  isClassAddrA(<addr in decimal/binary>,<true if addr is decimal>) : returns 1 if true
+  isClassAddrA(<addr in decimal/binary>) : returns 1 if true
   eg.
-  isClassAddrA('127.0.32.45',1);
+  isClassAddrA('127.0.32.45');
   isClassAddrA('00001111.11110010.00100100.10000001');
 
 =head2 dec2binIpAddr
@@ -344,39 +344,39 @@ Net::IP::Util - Common useful routines like converting decimal address to binary
 
 =head2 getAddrMaskDefault
 
-  getAddrMaskDefault(<ip addr in decimal/binary notation>,<true if addr is decimal>) : returns default subnet mask in dotted decimal notation
+  getAddrMaskDefault(<ip addr in decimal/binary notation>) : returns default subnet mask in dotted decimal notation
   eg.
-  getAddrMaskDefault('124.45.0.0',1); >> 255.0.0.0
+  getAddrMaskDefault('124.45.0.0'); >> 255.0.0.0
   getAddrMaskDefault('10000000.00000001.01010101.10000001'); >> 255.0.0.0
 
 =head2 getAddrClass
 
-  getAddrClass(<ip addr in decimal/binary notation>,<true if addr is decimal>)) : returns class (A/B/C/D/E) of ip address
+  getAddrClass(<ip addr in decimal/binary notation>) : returns class (A/B/C/D/E) of ip address
   eg.  
-  getAddrClass('124.45.0.0',1);
+  getAddrClass('124.45.0.0');
   getAddrClass('00001111.11110010.00100100.10000001');
 
 =head2 isValidMask
 
-  isValidMask(<ip addr in decimal/binary notation>,<true if addr is decimal>)) : returns 1 if valid mask
+  isValidMask(<ip addr in decimal/binary notation>) : returns 1 if valid mask
   eg.
-  isValidMask('255.255.252.0',1);
+  isValidMask('255.255.252.0');
   isValidMask('11111111.00000000.00000000.00000000');
 
 =head2 extendMaskByBits
 
-  extendMaskByBits(<ip addr in decimal/binary notation>,<no.of bits to extend>,<true if addr is decimal>))
+  extendMaskByBits(<ip addr in decimal/binary notation>,<no.of bits to extend>)
     : returns mask after extending/turning on given no. of bits after the already on bits of the mask
   eg.
-  extendMaskByBits('255.255.0.0',2,1); >> 255.255.192.0
+  extendMaskByBits('255.255.0.0',2); >> 255.255.192.0
   extendMaskByBits('11111111.00000000.00000000.00000000',2); >> 11111111.11000000.00000000.00000000
 
 =head2 calcSubnetsNHosts
   
-  calcSubnetsNHosts(ip addr in decimal/binary notation>,no. of borrowed bits,<true if addr is decimal>))
+  calcSubnetsNHosts(ip addr in decimal/binary notation>,no. of borrowed bits)
     : returns (no. of subnets, no. of hosts)
   eg.
-  calcSubnetsNHosts('128.0.0.1',4,1);
+  calcSubnetsNHosts('128.0.0.1',4);
   calcSubnetsNHosts('10001000.10100001.00010101.00000001',4);
 
 =head2 getBroadcastAddr
@@ -384,9 +384,9 @@ Net::IP::Util - Common useful routines like converting decimal address to binary
   getBroadcastAddr(<ip addr in decimal/binary notation>,
                    <default mask in decimal/binary notation>,
                    <subnet mask in decimal/binary notation>,
-                   <true if addr is decimal>) : returns broadcast addresses after subnetting as a list
+                   ) : returns broadcast addresses after subnetting as a list
   eg.
-  getBroadcastAddr('198.23.16.0','255.255.255.240','255.255.255.252',1); >> ('198.23.16.0','198.23.16.4','198.23.16.8','198.23.16.12')
+  getBroadcastAddr('198.23.16.0','255.255.255.240','255.255.255.252'); >> ('198.23.16.0','198.23.16.4','198.23.16.8','198.23.16.12')
   getBroadcastAddr('10000000.00000001.01010101.10000001',
                    '11111111.11111111.11111111.11110000',
                    '11111111.11111111.11111111.11111100',);

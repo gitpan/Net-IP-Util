@@ -1,4 +1,4 @@
-Net-IP-Util version 1.01
+Net-IP-Util version 1.02
 ========================
 
 The README is used to introduce the module and provide instructions on
@@ -39,28 +39,28 @@ SYNOPSIS
                            calcSubnetsNHosts
                            getBroadcastAddr    ## Explicit inclusions
 
-      isClassAddrA('127.0.32.45',1);
+      isClassAddrA('127.0.32.45');
       isClassAddrA('00001111.11110010.00100100.10000001');
 
       dec2binIpAddr('128.0.0.56');
       bin2decIpAddr('10001000.10100001.00010101.00000001');
 
-      getAddrMaskDefault('124.45.0.0',1);
+      getAddrMaskDefault('124.45.0.0');
       getAddrMaskDefault('10000000.00000001.01010101.10000001');
 
-      getAddrClass('124.45.0.0',1);
+      getAddrClass('124.45.0.0');
       getAddrClass('00001111.11110010.00100100.10000001');
 
-      isValidMask('255.255.252.0',1);
+      isValidMask('255.255.252.0');
       isValidMask('11111111.00000000.00000000.00000000');
 
-      extendMaskByBits('255.255.0.0',2,1);
+      extendMaskByBits('255.255.0.0',2);
       extendMaskByBits('11111111.00000000.00000000.00000000',2);
 
-      calcSubnetsNHosts('128.0.0.1',4,1);
+      calcSubnetsNHosts('128.0.0.1',4);
       calcSubnetsNHosts('10001000.10100001.00010101.00000001',4);
                            
-      getBroadcastAddr('198.23.16.0','255.255.255.240','255.255.255.252',1);
+      getBroadcastAddr('198.23.16.0','255.255.255.240','255.255.255.252');
       getBroadcastAddr('10000000.00000001.01010101.10000001',
                        '11111111.11111111.11111111.11110000',
                        '11111111.11111111.11111111.11111100',);
@@ -78,9 +78,9 @@ ABSTRACT
 METHODS
 
   isClassAddrA,isClassAddrB,isClassAddrC,isClassAddrD,isClassAddrE
-      isClassAddrA(<addr in decimal/binary>,<true if addr is decimal>) : returns 1 if true
+      isClassAddrA(<addr in decimal/binary>) : returns 1 if true
       eg.
-      isClassAddrA('127.0.32.45',1);
+      isClassAddrA('127.0.32.45');
       isClassAddrA('00001111.11110010.00100100.10000001');
 
   dec2binIpAddr
@@ -94,44 +94,44 @@ METHODS
       bin2decIpAddr('10001000.10100001.00010101.00000001');
 
   getAddrMaskDefault
-      getAddrMaskDefault(<ip addr in decimal/binary notation>,<true if addr is decimal>) : returns default subnet mask in dotted decimal notation
+      getAddrMaskDefault(<ip addr in decimal/binary notation>) : returns default subnet mask in dotted decimal notation
       eg.
-      getAddrMaskDefault('124.45.0.0',1); >> 255.0.0.0
+      getAddrMaskDefault('124.45.0.0'); >> 255.0.0.0
       getAddrMaskDefault('10000000.00000001.01010101.10000001'); >> 255.0.0.0
 
   getAddrClass
-      getAddrClass(<ip addr in decimal/binary notation>,<true if addr is decimal>)) : returns class (A/B/C/D/E) of ip address
+      getAddrClass(<ip addr in decimal/binary notation>) : returns class (A/B/C/D/E) of ip address
       eg.  
-      getAddrClass('124.45.0.0',1);
+      getAddrClass('124.45.0.0');
       getAddrClass('00001111.11110010.00100100.10000001');
 
   isValidMask
-      isValidMask(<ip addr in decimal/binary notation>,<true if addr is decimal>)) : returns 1 if valid mask
+      isValidMask(<ip addr in decimal/binary notation>) : returns 1 if valid mask
       eg.
-      isValidMask('255.255.252.0',1);
+      isValidMask('255.255.252.0');
       isValidMask('11111111.00000000.00000000.00000000');
 
   extendMaskByBits
-      extendMaskByBits(<ip addr in decimal/binary notation>,<no.of bits to extend>,<true if addr is decimal>))
+      extendMaskByBits(<ip addr in decimal/binary notation>,<no.of bits to extend>)
         : returns mask after extending/turning on given no. of bits after the already on bits of the mask
       eg.
-      extendMaskByBits('255.255.0.0',2,1); >> 255.255.192.0
+      extendMaskByBits('255.255.0.0',2); >> 255.255.192.0
       extendMaskByBits('11111111.00000000.00000000.00000000',2); >> 11111111.11000000.00000000.00000000
 
   calcSubnetsNHosts
-      calcSubnetsNHosts(ip addr in decimal/binary notation>,no. of borrowed bits,<true if addr is decimal>))
+      calcSubnetsNHosts(ip addr in decimal/binary notation>,no. of borrowed bits)
         : returns (no. of subnets, no. of hosts)
       eg.
-      calcSubnetsNHosts('128.0.0.1',4,1);
+      calcSubnetsNHosts('128.0.0.1',4);
       calcSubnetsNHosts('10001000.10100001.00010101.00000001',4);
 
   getBroadcastAddr
       getBroadcastAddr(<ip addr in decimal/binary notation>,
                        <default mask in decimal/binary notation>,
                        <subnet mask in decimal/binary notation>,
-                       <true if addr is decimal>) : returns broadcast addresses after subnetting as a list
+                       ) : returns broadcast addresses after subnetting as a list
       eg.
-      getBroadcastAddr('198.23.16.0','255.255.255.240','255.255.255.252',1); >> ('198.23.16.0','198.23.16.4','198.23.16.8','198.23.16.12')
+      getBroadcastAddr('198.23.16.0','255.255.255.240','255.255.255.252'); >> ('198.23.16.0','198.23.16.4','198.23.16.8','198.23.16.12')
       getBroadcastAddr('10000000.00000001.01010101.10000001',
                        '11111111.11111111.11111111.11110000',
                        '11111111.11111111.11111111.11111100',);
@@ -151,9 +151,9 @@ SUPPORT
 ACKNOWLEDGEMENTS
 
 COPYRIGHT & LICENSE
+
     Copyright 2013 Debashish Parasar, all rights reserved.
 
     This program is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.
-
 
