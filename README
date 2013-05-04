@@ -1,4 +1,4 @@
-Net-IP-Util version 1.02
+Net-IP-Util version 1.03
 ========================
 
 The README is used to introduce the module and provide instructions on
@@ -32,12 +32,14 @@ SYNOPSIS
       use Net::IP::Util;                       ## subroutines isClassAddrA-E, bin2decIpAddr, dec2binIpAddr
       use Net::IP::Util qw/:class/;            ## subroutines isClassAddrA-E, getAddrClass
       use Net::IP::Util qw/:convert/;          ## subroutines bin2decIpAddr, dec2binIpAddr 
-      use Net::IP::Util qw/getAddrMaskDefault 
+      use Net::IP::Util qw/getAddrMaskDefault
                            getAddrClass
                            isValidMask
                            extendMaskByBits
-                           calcSubnetsNHosts
-                           getBroadcastAddr    ## Explicit inclusions
+                           calcSubnet
+                           calcSubnetCIDR
+                           calcSubnetExt
+                           getNetworkAddr    ## Explicit inclusions
 
       isClassAddrA('127.0.32.45');
       isClassAddrA('00001111.11110010.00100100.10000001');
@@ -57,13 +59,23 @@ SYNOPSIS
       extendMaskByBits('255.255.0.0',2);
       extendMaskByBits('11111111.00000000.00000000.00000000',2);
 
-      calcSubnetsNHosts('128.0.0.1',4);
-      calcSubnetsNHosts('10001000.10100001.00010101.00000001',4);
+      calcSubnet('128.8.9.0');
+      calcSubnet('10001000.10100001.00010101.00000001');
+
+      calcSubnetCIDR('128.9.0.218/24');
+      calcSubnetCIDR('128.9.0.218/28', '255.255.255.0');
+
+      calcSubnetExt('128.0.0.1',4);
+      calcSubnetExt('10001000.10100001.00010101.00000001',4);
                            
-      getBroadcastAddr('198.23.16.0','255.255.255.240','255.255.255.252');
-      getBroadcastAddr('10000000.00000001.01010101.10000001',
+      getNetworkAddr('198.23.16.0','255.255.255.240','255.255.255.252');
+      getNetworkAddr('198.23.16.0','255.255.255.240','255.255.255.252', 1);
+      getNetworkAddr('10000000.00000001.01010101.10000001',
                        '11111111.11111111.11111111.11110000',
                        '11111111.11111111.11111111.11111100',);
+      getNetworkAddr('10000000.00000001.01010101.10000001',
+                       '11111111.11111111.11111111.11110000',
+                       '11111111.11111111.11111111.11111100', 1);
 
 ABSTRACT
 
@@ -118,27 +130,53 @@ METHODS
       extendMaskByBits('255.255.0.0',2); >> 255.255.192.0
       extendMaskByBits('11111111.00000000.00000000.00000000',2); >> 11111111.11000000.00000000.00000000
 
-  calcSubnetsNHosts
-      calcSubnetsNHosts(ip addr in decimal/binary notation>,no. of borrowed bits)
+  calcSubnet
+      calcSubnet(<ip addr in decimal/binary notation>) : returns (no. of subnets, no. of hosts)
+      calcSubnet('128.90.80.12');
+      calcSubnet('11000000.00000000.11000000.01011100');
+      - These always assumes Default Mask in calculation - hence no of subnets returned is always 0
+
+  calcSubnetCIDR
+      calcSubnetCIDR(<ip addr in decimal/binary CIDR notation>, [<mask in decimal/binary notation>])
+          : returns (no. of subnets, no. of hosts)
+      calcSubnetCIDR('128.87.56.26/28');
+      calcSubnetCIDR('128.87.56.26/28','255.255.252.0');
+
+  calcSubnetExt
+      calcSubnetExt(ip addr in decimal/binary notation>, no. of bits to extend in default mask OR no. of borrowed bits)
         : returns (no. of subnets, no. of hosts)
       eg.
-      calcSubnetsNHosts('128.0.0.1',4);
-      calcSubnetsNHosts('10001000.10100001.00010101.00000001',4);
+      calcSubnetExt('128.0.0.1',4);
+      calcSubnetExt('10001000.10100001.00010101.00000001',4);
 
-  getBroadcastAddr
-      getBroadcastAddr(<ip addr in decimal/binary notation>,
+      Expln : no. of borrowed bits is added to the default subnet mask of ip addr to subnet mask
+              and subnetting is done so :
+              ***************************************************
+              127.0.40.1           = ip addr
+              255.0.0.0            = default subnet mask
+              no. of borrowed bits = 4
+                                   => 255.240.0.0 = extended mask 
+              ***************************************************
+
+  getNetworkAddr
+      getNetworkAddr(<ip addr in decimal/binary notation>,
                        <default mask in decimal/binary notation>,
                        <subnet mask in decimal/binary notation>,
-                       ) : returns broadcast addresses after subnetting as a list
+                       <true flag - if you want broadcast addresses instead of n/w addresses
+                       ) : returns network/broadcast addresses of the subnets after subnetting as a list
       eg.
-      getBroadcastAddr('198.23.16.0','255.255.255.240','255.255.255.252'); >> ('198.23.16.0','198.23.16.4','198.23.16.8','198.23.16.12')
-      getBroadcastAddr('10000000.00000001.01010101.10000001',
+      getNetworkAddr('198.23.16.0','255.255.255.240','255.255.255.252'); >> ('198.23.16.0','198.23.16.4','198.23.16.8','198.23.16.12')
+      getNetworkAddr('198.23.16.0','255.255.255.240','255.255.255.252',1); >> ('198.23.16.3','198.23.16.7','198.23.16.11','198.23.16.15')
+      getNetworkAddr('10000000.00000001.01010101.10000001',
                        '11111111.11111111.11111111.11110000',
-                       '11111111.11111111.11111111.11111100',);
+                       '11111111.11111111.11111111.11111100',); >> Always returns n/w addresses in dotted decimal irrespective of binary/decimal
+                                                                   address parameter passed
 
 CAVEAT
 
       IPv4 only
+      Validation of IP addresses are done, but because of conversions here and there it may not show the IP address properly in the error message
+      as passed earlier by the user.
 
 Similar Modules
 
